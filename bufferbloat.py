@@ -22,6 +22,8 @@ import sys
 import os
 import math
 
+import helper
+
 # TODO: Don't just read the TODO sections in this code.  Remember that
 # one of the goals of this assignment is for you to learn how to use
 # Mininet.
@@ -81,9 +83,8 @@ class BBTopo(Topo):
         switch = self.addSwitch('s0')
 
         # TODO: Add links with appropriate characteristics
-        self.addLink('h1','s0',bw=args.bw_host, max_queue_size=args.maxq, delay='%sms'%args.delay)
-        self.addLink('s0','h2',bw=args.bw_net, max_queue_size=args.maxq, delay='%sms'%args.delay)
-
+        self.addLink('h1','s0',bw=args.bw_host, max_queue_size=args.maxq, delay='%fms'%args.delay)
+        self.addLink('s0','h2',bw=args.bw_net, max_queue_size=args.maxq, delay='%fms'%args.delay)
 
 # Simple wrappers around monitoring utilities.  You are welcome to
 # contribute neatly written (using classes) monitoring scripts for
@@ -106,23 +107,24 @@ def start_qmon(iface, interval_sec=0.1, outfile="q.txt"):
     return monitor
 
 def start_iperf(net):
-    h2 = net.get('h2')
-    print "Starting iperf server..."
     # For those who are curious about the -w 16m parameter, it ensures
     # that the TCP flow is not receiver window limited.  If it is,
     # there is a chance that the router buffer may not get filled up.
+    h2 = net.get('h2')
+    print "Starting iperf server..."
     server = h2.popen("iperf -s -w 16m")
+
     # TODO: Start the iperf client on h1.  Ensure that you create a
     # long lived TCP flow. You may need to redirect iperf's stdout to avoid blocking.
     h1 = net.get('h1')
-    client = h1.popen("iperf -c %s -t %s" % (h2.IP(), args.time))
-
+    client = h1.popen("iperf -c %s -t %d" % (h2.IP(), args.time))
 
 def start_webserver(net):
     h1 = net.get('h1')
     proc = h1.popen("python http/webserver.py", shell=True)
     sleep(1)
     return [proc]
+
 
 def start_ping(net):
     # TODO: Start a ping train from h1 to h2 (or h2 to h1, does it
@@ -138,7 +140,21 @@ def start_ping(net):
     h1 = net.get('h1')
     h2 = net.get('h2')
     h1.popen("ping -c %s -i %s %s > %s/ping.txt".format(args.time * 10, 0.1, h2.IP(), args.dir), shell=True)
-    
+
+
+def get_mean_fetch_webserver_3_times(net):
+    h1 = net.get('h1')
+    h2 = net.get('h2')
+    timings = []
+
+    command = "curl -o /dev/null -s -w %{time_total} " + h1.IP() +"/http/index.html"
+    for i in range(3):
+        result = h2.popen(command)
+        time, err = result.communicate()
+        timings.append(float(time))
+
+    return timings
+
 
 def bufferbloat():
     if not os.path.exists(args.dir):
@@ -167,12 +183,14 @@ def bufferbloat():
     # Depending on the order you add links to your network, this
     # number may be 1 or 2.  Ensure you use the correct number.
     #
-    # qmon = start_qmon(iface='s0-eth2',
-    #                  outfile='%s/q.txt' % (args.dir))
-    qmon = None
+    # Bottleneck happens at eth2 as the bandwidth is smaller, hence 
+    # the queue will be used in this link
+    qmon = start_qmon(iface='s0-eth2', outfile='%s/q.txt' % (args.dir))
+    # qmon = None
 
     # TODO: Start iperf, webservers, etc.
-    # start_iperf(net)
+    start_iperf(net)
+    start_webserver(net)
 
     # Hint: The command below invokes a CLI which you can use to
     # debug.  It allows you to run arbitrary commands inside your
@@ -188,9 +206,11 @@ def bufferbloat():
     # Hint: have a separate function to do this and you may find the
     # loop below useful.
     start_time = time()
+    timings = []
     while True:
+        timings += (get_mean_fetch_webserver_3_times(net))
         # do the measurement (say) 3 times.
-        sleep(1)
+        sleep(5)
         now = time()
         delta = now - start_time
         if delta > args.time:
@@ -200,6 +220,12 @@ def bufferbloat():
     # TODO: compute average (and standard deviation) of the fetch
     # times.  You don't need to plot them.  Just note it in your
     # README and explain.
+    print(timings)
+    print(len(timings))
+    avg = helper.avg(timings)
+    sd = helper.stdev(timings)
+    print("average: " + str(avg))
+    print("standard deviation: " + str(sd))
 
     stop_tcpprobe()
     if qmon is not None:
