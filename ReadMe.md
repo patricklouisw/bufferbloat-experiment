@@ -1,12 +1,12 @@
 # Submission
 
 Mean time recorded when queue size is 20:
-average: 0.611466666667 ms
-standard deviation: 0.229596806017 ms
+average: 0.563088888889
+standard deviation: 0.18103465871
 
 Mean time recorded when queue size is 100:
-average: 1.39193939394 ms
-standard deviation: 0.763257529889 ms
+average: 1.39012121212
+standard deviation: 0.632513540762
 
 ## Questions
 
@@ -37,8 +37,8 @@ standard deviation: 0.763257529889 ms
 
 3.  I added a code in plot_ping.py to calculate the mean RTT found.
 
-    Mean of queue size 20: 44.4900525762 ms
-    Mean of queue size 100: 223.566805846 ms
+    Mean: 39.9149369748
+    Mean: 189.149803719
 
     RTT ~= 5 * QUEUE_SIZE + d
 
