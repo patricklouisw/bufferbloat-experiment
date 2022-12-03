@@ -83,8 +83,8 @@ class BBTopo(Topo):
         switch = self.addSwitch('s0')
 
         # TODO: Add links with appropriate characteristics
-        self.addLink('h1','s0',bw=args.bw_host, max_queue_size=args.maxq, delay='%fms'%args.delay)
-        self.addLink('s0','h2',bw=args.bw_net, max_queue_size=args.maxq, delay='%fms'%args.delay)
+        self.addLink('h1','s0',bw=args.bw_host, max_queue_size=args.maxq, delay='%.1fms'%args.delay)
+        self.addLink('s0','h2',bw=args.bw_net, max_queue_size=args.maxq, delay='%.1fms'%args.delay)
 
 # Simple wrappers around monitoring utilities.  You are welcome to
 # contribute neatly written (using classes) monitoring scripts for
@@ -139,8 +139,9 @@ def start_ping(net):
     # redirecting stdout
     h1 = net.get('h1')
     h2 = net.get('h2')
-    h1.popen("ping -c %s -i %s %s > %s/ping.txt".format(args.time * 10, 0.1, h2.IP(), args.dir), shell=True)
-
+    cmd = "ping -w %d -c %s -i %s %s > %s/ping.txt" % (args.time, args.time * 10, 0.1, h2.IP(), args.dir)
+    h1.popen(cmd, shell=True)
+    
 
 def get_mean_fetch_webserver_3_times(net):
     h1 = net.get('h1')

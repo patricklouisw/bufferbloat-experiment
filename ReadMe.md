@@ -1,11 +1,12 @@
 # Submission
-q20:
-average: 0.586266666667
-standard deviation: 0.141697706403
 
-q100
-average: 1.11255555556
-standard deviation: 0.582599082867
+Mean time recorded when queue size is 20:
+average: 0.611466666667 ms
+standard deviation: 0.229596806017 ms
+
+Mean time recorded when queue size is 100:
+average: 1.39193939394 ms
+standard deviation: 0.763257529889 ms
 
 ## Questions
 
@@ -32,15 +33,20 @@ standard deviation: 0.582599082867
     b.  __Given:__ MTU = 1500 Bytes; Draining rate = 100Mbps
 
         Maximum time a packet might wait in the queue before it leaves the NIC:
-        1500 * 1000 * 8 / (100 * 10^6) = 0.12 seconds
+        1500 * 1000 * 8 bits / (100 * 10^6) bps = 0.12 seconds
 
-3. RTT ~= 6 * QUEUE_SIZE + C
+3.  I added a code in plot_ping.py to calculate the mean RTT found.
 
-C = Propagation Delay + Packetization Delay ~= 20ms
+Mean of queue size 20: 44.4900525762 ms
+Mean of queue size 100: 223.566805846 ms
 
+RTT ~= 5 * QUEUE_SIZE + d
 
-4.  One way to mitigate buffer bloat would be to differentiate TCP flows based on the Differentiated Services flags in the TCP header. This would only mitigate the problem by using multiple smaller buffers.
+d = deviation from any delays (transmission, propagation, processing, queueing delay)
 
-    Another way to mitigate the problem is to employ active queue management algorithms. These algorithms intelligently choose to preemptively drop or mark packets prior to the queue filling up, preventing a long lived TCP flow from blocking other flows.
+4.  Two ways to mitigate bufferbloat:
 
+    a. A buffer packet management algorithm which preemptively selects packets to be dropped from the buffer so as to alert the sender to reduce its congestion window, hence reducing traffic rate.
+
+    b. Identify the traffic flow based on the service it provides and sets a rate in which each TCP flows are allowed to send its packet. Hence, we are shaping the incoming traffic flow as such that we will not fully utilised the buffer and caused a bufferfloat.
 

@@ -57,6 +57,12 @@ for i, f in enumerate(args.files):
     xaxis = map(lambda x: (x - start_time) / args.freq, xaxis)
     qlens = map(float, col(1, data))
 
+    total = 0
+    for d in data:
+        _, rtt = d
+        total += rtt
+    print("Mean: " + str(total / len(data)))
+
     ax.plot(xaxis, qlens, lw=2)
     ax.xaxis.set_major_locator(MaxNLocator(4))
 
