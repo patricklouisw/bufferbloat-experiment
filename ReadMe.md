@@ -37,12 +37,12 @@ standard deviation: 0.763257529889 ms
 
 3.  I added a code in plot_ping.py to calculate the mean RTT found.
 
-Mean of queue size 20: 44.4900525762 ms
-Mean of queue size 100: 223.566805846 ms
+    Mean of queue size 20: 44.4900525762 ms
+    Mean of queue size 100: 223.566805846 ms
 
-RTT ~= 5 * QUEUE_SIZE + d
+    RTT ~= 5 * QUEUE_SIZE + d
 
-d = deviation from any delays (transmission, propagation, processing, queueing delay)
+    d = deviation from any delays (transmission, propagation, processing, queueing delay)
 
 4.  Two ways to mitigate bufferbloat:
 
